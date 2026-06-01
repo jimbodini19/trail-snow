@@ -1,0 +1,59 @@
+# Seed trails for sanity-checking v1 output.
+#
+# Each entry: a small bounding box around the trail, plus an Overpass name
+# filter (used as a regex against the way's "name" tag) to narrow the result.
+# bbox order: south,west,north,east
+#
+# Expectation column is a rough guess for early June at typical recent snowpack.
+# Use these to eyeball whether the nearest-SNOTEL reading looks sane, not as
+# ground truth.
+
+trails:
+  - id: skyline_loop_rainier
+    name: Skyline Trail (Paradise, Mt Rainier)
+    area: WA - Mt Rainier NP
+    bbox: [46.770, -121.745, 46.795, -121.715]
+    name_regex: "Skyline"
+    expected: snowy (Paradise sits at ~5400 ft, late-melt zone)
+
+  - id: snow_lake_snoqualmie
+    name: Snow Lake Trail (Snoqualmie Pass)
+    area: WA - Snoqualmie Pass
+    bbox: [47.440, -121.440, 47.460, -121.395]
+    name_regex: "Snow Lake"
+    expected: borderline (3000-4400 ft, often patchy in early June)
+
+  - id: heather_maple_pass
+    name: Heather-Maple Pass Loop (North Cascades)
+    area: WA - North Cascades / Hwy 20
+    bbox: [48.515, -120.745, 48.535, -120.715]
+    name_regex: "Maple Pass|Heather"
+    expected: snowy (5000-6600 ft, north-facing)
+
+  - id: lake_22_mountain_loop
+    name: Lake 22 Trail (Mountain Loop)
+    area: WA - Mountain Loop Highway
+    bbox: [48.075, -121.755, 48.090, -121.725]
+    name_regex: "Lake Twenty[- ]?Two|Lake 22"
+    expected: borderline (2400-3100 ft, west-side, dense forest)
+
+  - id: kamiak_butte
+    name: Kamiak Butte Loop (near Moscow, ID / Palouse)
+    area: ID/WA - Palouse
+    bbox: [46.875, -117.155, 46.890, -117.130]
+    name_regex: "Pine Ridge|Kamiak"
+    expected: dry (low elevation, Palouse)
+
+  - id: moscow_mountain
+    name: Moscow Mountain trails
+    area: ID - Moscow
+    bbox: [46.795, -116.880, 46.835, -116.820]
+    name_regex: ".+"
+    expected: dry (lower elevation forest, may have shaded patches)
+
+  - id: hells_gate_lewiston
+    name: Hells Gate State Park
+    area: ID - Lewiston
+    bbox: [46.350, -117.045, 46.370, -117.015]
+    name_regex: ".+"
+    expected: dry (Snake River canyon, low elevation)
