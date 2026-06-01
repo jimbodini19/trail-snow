@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>trail-snow v1 map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+ integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+  #map { position: absolute; inset: 0; }
+  .legend, .panel {
+    background: white; padding: 10px 12px; border-radius: 6px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.3); font-size: 12px; line-height: 1.4;
+  }
+  .legend { line-height: 1.5; }
+  .swatch { display: inline-block; width: 12px; height: 12px; margin-right: 6px;
+            border-radius: 2px; vertical-align: -1px; }
+  .panel { max-width: 320px; max-height: 70vh; overflow-y: auto; }
+  .panel h3 { margin: 0 0 6px; font-size: 13px; }
+  .panel .row { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+  .panel .row:last-child { border-bottom: none; }
+  .panel .name { font-weight: 600; }
+  .panel .meta { color: #555; font-size: 11px; }
+  .popup b { color: #222; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+ integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+const DATA = [{"seed_id": "skyline_loop_rainier", "seed_name": "Skyline Trail (Paradise, Mt Rainier)", "area": "WA - Mt Rainier NP", "expected": "snowy (Paradise ~5400 ft, late-melt zone)", "bbox": [46.77, -121.745, 46.795, -121.715], "centroid": [46.7825, -121.73], "trail_count": null, "total_km": null, "station": {"name": "Paradise", "triplet": "679:WA:SNTL", "lat": 46.78266, "lon": -121.74767, "elevation_ft": 5150.0, "distance_km": 1.35}, "snow": {"SNWD": {"value": 14, "date": "2026-05-31", "unit": "in"}, "WTEQ": {"value": 15.2, "date": "2026-05-31", "unit": "in"}}}, {"seed_id": "snow_lake_snoqualmie", "seed_name": "Snow Lake Trail (Snoqualmie Pass)", "area": "WA - Snoqualmie Pass", "expected": "borderline (3000-4400 ft)", "bbox": [47.44, -121.44, 47.46, -121.395], "centroid": [47.45, -121.4175], "trail_count": null, "total_km": null, "station": {"name": "Olallie Meadows", "triplet": "672:WA:SNTL", "lat": 47.37406, "lon": -121.44213, "elevation_ft": 4010.0, "distance_km": 8.65}, "snow": {"SNWD": {"value": 0, "date": "2026-05-31", "unit": "in"}, "WTEQ": {"value": 0.0, "date": "2026-05-31", "unit": "in"}}}, {"seed_id": "heather_maple_pass", "seed_name": "Heather-Maple Pass Loop (North Cascades)", "area": "WA - North Cascades / Hwy 20", "expected": "snowy (5000-6600 ft)", "bbox": [48.515, -120.745, 48.535, -120.715], "centroid": [48.525, -120.73], "trail_count": null, "total_km": null, "station": {"name": "Harts Pass", "triplet": "515:WA:SNTL", "lat": 48.72047, "lon": -120.6586, "elevation_ft": 6490.0, "distance_km": 22.36}, "snow": {"SNWD": {"value": 25, "date": "2026-05-31", "unit": "in"}, "WTEQ": {"value": 18.4, "date": "2026-05-31", "unit": "in"}}}, {"seed_id": "lake_22_mountain_loop", "seed_name": "Lake 22 Trail (Mountain Loop)", "area": "WA - Mountain Loop Highway", "expected": "borderline (2400-3100 ft)", "bbox": [48.075, -121.755, 48.09, -121.725], "centroid": [48.0825, -121.74], "trail_count": null, "total_km": null, "station": {"name": "Alpine Meadows", "triplet": "908:WA:SNTL", "lat": 47.77957, "lon": -121.69847, "elevation_ft": 3500.0, "distance_km": 33.83}, "snow": {"SNWD": {"value": 5, "date": "2026-05-31", "unit": "in"}, "WTEQ": {"value": 2.6, "date": "2026-05-31", "unit": "in"}}}, {"seed_id": "kamiak_butte", "seed_name": "Kamiak Butte Loop (Palouse)", "area": "ID/WA - Palouse", "expected": "dry (low elev)", "bbox": [46.875, -117.155, 46.89, -117.13], "centroid": [46.8825, -117.1425], "trail_count": null, "total_km": null, "station": null, "snow": null}, {"seed_id": "moscow_mountain", "seed_name": "Moscow Mountain trails", "area": "ID - Moscow", "expected": "dry (shaded patches possible)", "bbox": [46.795, -116.88, 46.835, -116.82], "centroid": [46.815, -116.85], "trail_count": null, "total_km": null, "station": null, "snow": null}, {"seed_id": "hells_gate_lewiston", "seed_name": "Hells Gate State Park", "area": "ID - Lewiston", "expected": "dry (Snake River canyon)", "bbox": [46.35, -117.045, 46.37, -117.015], "centroid": [46.36, -117.03], "trail_count": null, "total_km": null, "station": null, "snow": null}];
+
+function classify(snwd) {
+  if (snwd == null) return {color: "#888", label: "no data"};
+  if (snwd >= 4) return {color: "#d73027", label: "snowy"};
+  if (snwd >= 1) return {color: "#fdae61", label: "patchy"};
+  return {color: "#1a9850", label: "bare"};
+}
+
+const map = L.map("map");
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
+  maxZoom: 19,
+}).addTo(map);
+
+const allLatLngs = [];
+const stationsSeen = new Map();
+
+DATA.forEach((e) => {
+  const [s, w, n, ea] = e.bbox;
+  L.rectangle([[s, w], [n, ea]], {color: "#3388ff", weight: 1, fillOpacity: 0.05}).addTo(map);
+  allLatLngs.push([s, w], [n, ea]);
+
+  const [clat, clon] = e.centroid;
+  const snwd = e.snow && e.snow.SNWD ? e.snow.SNWD.value : null;
+  const wteq = e.snow && e.snow.WTEQ ? e.snow.WTEQ.value : null;
+  const cls = classify(snwd);
+
+  const trailMarker = L.circleMarker([clat, clon], {
+    radius: 9, color: cls.color, fillColor: cls.color, fillOpacity: 0.7, weight: 2,
+  }).addTo(map);
+  let popup = `<div class="popup"><b>${e.seed_name}</b><br>` +
+    `<span style="color:#666">${e.area}</span><br>` +
+    `expected: ${e.expected}<br>`;
+  if (e.station) {
+    popup += `nearest SNOTEL: <b>${e.station.name}</b> (${e.station.triplet})<br>` +
+      `${e.station.distance_km.toFixed(1)} km away, ${e.station.elevation_ft ? e.station.elevation_ft.toFixed(0)+' ft' : 'elev n/a'}<br>` +
+      `SNWD: <b>${snwd != null ? snwd + ' in' : 'n/a'}</b> ` +
+      `(as of ${e.snow.SNWD.date || 'n/a'})<br>` +
+      `WTEQ: ${wteq != null ? wteq + ' in' : 'n/a'} (as of ${e.snow.WTEQ.date || 'n/a'})<br>` +
+      `class: <b style="color:${cls.color}">${cls.label}</b>`;
+  } else {
+    popup += `no SNOTEL within search radius`;
+  }
+  popup += `</div>`;
+  trailMarker.bindPopup(popup);
+
+  if (e.station) {
+    L.polyline([[clat, clon], [e.station.lat, e.station.lon]],
+      {color: cls.color, weight: 2, dashArray: "4 6", opacity: 0.7}).addTo(map);
+    allLatLngs.push([e.station.lat, e.station.lon]);
+
+    const key = e.station.triplet;
+    if (!stationsSeen.has(key)) {
+      stationsSeen.set(key, true);
+      const sm = L.circleMarker([e.station.lat, e.station.lon], {
+        radius: 6, color: "#222", fillColor: cls.color, fillOpacity: 0.9, weight: 1,
+      }).addTo(map);
+      sm.bindPopup(
+        `<div class="popup"><b>${e.station.name}</b> SNOTEL<br>` +
+        `triplet: ${e.station.triplet}<br>` +
+        `elevation: ${e.station.elevation_ft ? e.station.elevation_ft.toFixed(0)+' ft' : 'n/a'}<br>` +
+        `SNWD: ${snwd != null ? snwd + ' in' : 'n/a'} (as of ${e.snow.SNWD.date || 'n/a'})<br>` +
+        `WTEQ: ${wteq != null ? wteq + ' in' : 'n/a'} (as of ${e.snow.WTEQ.date || 'n/a'})</div>`
+      );
+    }
+  }
+});
+
+if (allLatLngs.length) {
+  map.fitBounds(L.latLngBounds(allLatLngs), {padding: [40, 40]});
+} else {
+  map.setView([47.5, -120.5], 7);
+}
+
+const legend = L.control({position: "bottomright"});
+legend.onAdd = function () {
+  const div = L.DomUtil.create("div", "legend");
+  div.innerHTML = `
+    <b>snow depth class</b><br>
+    <span class="swatch" style="background:#d73027"></span> snowy (&ge; 4 in)<br>
+    <span class="swatch" style="background:#fdae61"></span> patchy (1 to 4 in)<br>
+    <span class="swatch" style="background:#1a9850"></span> bare (&lt; 1 in)<br>
+    <span class="swatch" style="background:#888"></span> no data
+  `;
+  return div;
+};
+legend.addTo(map);
+
+const panel = L.control({position: "topright"});
+panel.onAdd = function () {
+  const div = L.DomUtil.create("div", "panel");
+  let html = `<h3>v1 readings</h3>`;
+  DATA.forEach((e) => {
+    const snwd = e.snow && e.snow.SNWD ? e.snow.SNWD.value : null;
+    const cls = classify(snwd);
+    const stationLine = e.station
+      ? `${e.station.name} ${e.station.distance_km.toFixed(1)} km`
+      : `no nearby SNOTEL`;
+    const depthLine = snwd != null
+      ? `SNWD <b>${snwd} in</b> &middot; <span style="color:${cls.color}">${cls.label}</span>`
+      : `&mdash;`;
+    html += `<div class="row">
+      <div class="name">${e.seed_name}</div>
+      <div class="meta">${stationLine}</div>
+      <div>${depthLine}</div>
+    </div>`;
+  });
+  div.innerHTML = html;
+  L.DomEvent.disableClickPropagation(div);
+  L.DomEvent.disableScrollPropagation(div);
+  return div;
+};
+panel.addTo(map);
+</script>
+</body>
+</html>

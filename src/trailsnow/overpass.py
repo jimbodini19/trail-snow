@@ -16,7 +16,14 @@ from typing import Iterable
 import requests
 
 OVERPASS_URL = "https://overpass-api.de/api/interpreter"
-USER_AGENT = "trail-snow/0.1 (https://example.local)"
+# Overpass returns 406 if the UA looks bot-ish or anonymous. Include a real
+# contact email per their etiquette guide.
+USER_AGENT = "trail-snow/0.2 (contact: jimmy@guidedgrowthmktg.com)"
+HEADERS = {
+    "User-Agent": USER_AGENT,
+    "Accept": "application/json",
+    "Accept-Charset": "utf-8",
+}
 CACHE_DIR = Path("data/cache/overpass")
 
 
@@ -34,10 +41,12 @@ def _query_overpass(query: str, timeout: int = 60, max_attempts: int = 3) -> dic
     last_err: Exception | None = None
     for attempt in range(max_attempts):
         try:
+            # POST the raw query as the body with text/plain. Some Overpass
+            # mirrors return 406 for form-encoded or url-encoded bodies.
             r = requests.post(
                 OVERPASS_URL,
-                data={"data": query},
-                headers={"User-Agent": USER_AGENT},
+                data=query.encode("utf-8"),
+                headers={**HEADERS, "Content-Type": "text/plain; charset=utf-8"},
                 timeout=timeout,
             )
             if r.status_code == 200:

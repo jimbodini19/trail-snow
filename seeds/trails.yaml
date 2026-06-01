@@ -1,14 +1,13 @@
-# Seed trails for sanity-checking v1 output.
+# Seed trails for trail-snow. Spread across ID/WA/OR/MT.
+# Mix of low/borderline/alpine and known plowed-vs-gated access cases so the
+# sanity check is meaningful.
 #
-# Each entry: a small bounding box around the trail, plus an Overpass name
-# filter (used as a regex against the way's "name" tag) to narrow the result.
-# bbox order: south,west,north,east
-#
-# Expectation column is a rough guess for early June at typical recent snowpack.
-# Use these to eyeball whether the nearest-SNOTEL reading looks sane, not as
-# ground truth.
+# bbox order: south, west, north, east. Keep boxes tight so Overpass returns
+# only the trail you mean, not every connected way.
+# name_regex is a substring/alt regex matched against OSM way "name" tags.
 
 trails:
+  # ============== WASHINGTON CASCADES ==============
   - id: skyline_loop_rainier
     name: Skyline Trail (Paradise, Mt Rainier)
     area: WA - Mt Rainier NP
@@ -37,23 +36,271 @@ trails:
     name_regex: "Lake Twenty[- ]?Two|Lake 22"
     expected: borderline (2400-3100 ft, west-side, dense forest)
 
+  - id: mount_si
+    name: Mount Si (North Bend)
+    area: WA - I-90 corridor
+    bbox: [47.480, -121.730, 47.500, -121.705]
+    name_regex: "Mount Si|Mt Si"
+    expected: open (~1100 ft trailhead to 3900 ft summit, melted by early June)
+
+  - id: rattlesnake_ledge
+    name: Rattlesnake Ledge
+    area: WA - I-90 corridor
+    bbox: [47.434, -121.776, 47.450, -121.750]
+    name_regex: "Rattlesnake"
+    expected: open (low elevation, year-round)
+
+  - id: mailbox_peak
+    name: Mailbox Peak (New Trail)
+    area: WA - I-90 corridor
+    bbox: [47.460, -121.680, 47.480, -121.650]
+    name_regex: "Mailbox"
+    expected: borderline (1000 to 4800 ft, summit may have lingering snow)
+
+  - id: granite_mountain
+    name: Granite Mountain (Snoqualmie Pass)
+    area: WA - I-90 corridor
+    bbox: [47.395, -121.490, 47.420, -121.460]
+    name_regex: "Granite Mountain"
+    expected: snowy (5600 ft summit, south-facing but holds snow into June)
+
+  - id: lake_serene_bridal_veil
+    name: Lake Serene / Bridal Veil Falls
+    area: WA - Stevens Pass corridor
+    bbox: [47.795, -121.580, 47.820, -121.545]
+    name_regex: "Serene|Bridal Veil"
+    expected: borderline (~2500 ft, lake at 2500 ft, may be patchy)
+
+  - id: mount_pilchuck
+    name: Mount Pilchuck Lookout
+    area: WA - Mountain Loop Highway
+    bbox: [48.060, -121.825, 48.080, -121.795]
+    name_regex: "Pilchuck"
+    expected: snowy (5340 ft summit, west-side, late-melt)
+
+  - id: hurricane_hill
+    name: Hurricane Hill (Olympic NP)
+    area: WA - Olympic NP
+    bbox: [47.970, -123.530, 47.985, -123.500]
+    name_regex: "Hurricane"
+    expected: borderline (5750 ft, but road is plowed, trail melts late)
+
+  - id: spray_park_rainier
+    name: Spray Park (Mt Rainier)
+    area: WA - Mt Rainier NP (Mowich Lake)
+    bbox: [46.930, -121.870, 46.960, -121.835]
+    name_regex: "Spray Park|Mowich|Spray"
+    expected: snowy (6400 ft, Mowich Lake Road usually still gated in early June)
+
+  - id: cascade_pass_sahale
+    name: Cascade Pass / Sahale Arm
+    area: WA - North Cascades NP
+    bbox: [48.460, -121.085, 48.485, -121.050]
+    name_regex: "Cascade Pass|Sahale"
+    expected: snowy (5400-7600 ft, road gate often opens late May)
+
+  # ============== OREGON ==============
+  - id: multnomah_falls
+    name: Multnomah Falls Trail
+    area: OR - Columbia Gorge
+    bbox: [45.572, -122.122, 45.585, -122.108]
+    name_regex: "Multnomah|Larch Mountain"
+    expected: open (low elevation rainforest, snow-free)
+
+  - id: eagle_creek_or
+    name: Eagle Creek Trail (Columbia Gorge)
+    area: OR - Columbia Gorge
+    bbox: [45.625, -121.930, 45.650, -121.895]
+    name_regex: "Eagle Creek"
+    expected: open (river canyon, year-round)
+
+  - id: mirror_lake_hood
+    name: Mirror Lake (Mt Hood)
+    area: OR - Mt Hood NF
+    bbox: [45.290, -121.795, 45.310, -121.770]
+    name_regex: "Mirror Lake"
+    expected: borderline (~4060 ft, often patchy snow into June)
+
+  - id: tom_dick_harry
+    name: Tom Dick and Harry Mountain
+    area: OR - Mt Hood NF
+    bbox: [45.285, -121.815, 45.310, -121.775]
+    name_regex: "Tom.*Dick|Tom Dick"
+    expected: snowy (5060 ft summit, north-facing slopes hold snow)
+
+  - id: trillium_lake_loop
+    name: Trillium Lake Loop
+    area: OR - Mt Hood NF
+    bbox: [45.265, -121.745, 45.282, -121.722]
+    name_regex: "Trillium"
+    expected: borderline (~3600 ft, road may still be gated/snowy in early June)
+
+  - id: garfield_peak_crater
+    name: Garfield Peak (Crater Lake)
+    area: OR - Crater Lake NP
+    bbox: [42.905, -122.150, 42.918, -122.130]
+    name_regex: "Garfield"
+    expected: snowy (8060 ft summit, Rim Drive often closed past late May)
+
+  - id: south_sister_climb
+    name: South Sister Climbers Trail
+    area: OR - Three Sisters Wilderness
+    bbox: [43.985, -121.755, 44.110, -121.690]
+    name_regex: "South Sister|Devils Lake"
+    expected: snowy (10360 ft summit, snow on route until late July)
+
+  - id: smith_rock
+    name: Misery Ridge (Smith Rock)
+    area: OR - Smith Rock SP
+    bbox: [44.360, -121.150, 44.378, -121.130]
+    name_regex: "Misery|Mesa Verde"
+    expected: open (3000 ft high desert, dry)
+
+  - id: iron_mountain_or
+    name: Iron Mountain (Old Cascades)
+    area: OR - Willamette NF
+    bbox: [44.398, -122.155, 44.412, -122.135]
+    name_regex: "Iron Mountain"
+    expected: borderline (5460 ft summit, mid-elevation, melts late May)
+
+  # ============== IDAHO ==============
   - id: kamiak_butte
-    name: Kamiak Butte Loop (near Moscow, ID / Palouse)
+    name: Kamiak Butte Loop (Palouse)
     area: ID/WA - Palouse
     bbox: [46.875, -117.155, 46.890, -117.130]
     name_regex: "Pine Ridge|Kamiak"
-    expected: dry (low elevation, Palouse)
+    expected: open (low elevation, Palouse)
 
   - id: moscow_mountain
     name: Moscow Mountain trails
     area: ID - Moscow
     bbox: [46.795, -116.880, 46.835, -116.820]
     name_regex: ".+"
-    expected: dry (lower elevation forest, may have shaded patches)
+    expected: open (3500-4900 ft forest, may have shaded patches)
 
   - id: hells_gate_lewiston
     name: Hells Gate State Park
     area: ID - Lewiston
     bbox: [46.350, -117.045, 46.370, -117.015]
     name_regex: ".+"
-    expected: dry (Snake River canyon, low elevation)
+    expected: open (Snake River canyon, low elevation)
+
+  - id: mickinnick_sandpoint
+    name: Mickinnick Trail (Sandpoint)
+    area: ID - Sandpoint
+    bbox: [48.290, -116.605, 48.310, -116.580]
+    name_regex: "Mickinnick"
+    expected: borderline (2200 ft to 3300 ft, mostly melted)
+
+  - id: tubbs_hill_cda
+    name: Tubbs Hill (Coeur d'Alene)
+    area: ID - Coeur d'Alene
+    bbox: [47.665, -116.785, 47.680, -116.770]
+    name_regex: "Tubbs"
+    expected: open (lakefront, 2150 ft, snow-free)
+
+  - id: mineral_ridge
+    name: Mineral Ridge National Recreation Trail
+    area: ID - Coeur d'Alene area
+    bbox: [47.598, -116.704, 47.612, -116.685]
+    name_regex: "Mineral Ridge"
+    expected: open (~2500-3500 ft, south-facing, melts early)
+
+  - id: stevens_lakes_lookout_pass
+    name: Stevens Lakes (Lookout Pass)
+    area: ID - Bitterroots
+    bbox: [47.448, -115.715, 47.470, -115.685]
+    name_regex: "Stevens Lakes?"
+    expected: snowy (5200 ft trailhead, 6100+ ft lakes, late melt)
+
+  - id: alice_lake_sawtooths
+    name: Alice Lake (Sawtooths)
+    area: ID - Sawtooth Wilderness
+    bbox: [43.985, -114.945, 44.020, -114.905]
+    name_regex: "Alice Lake|Tin Cup"
+    expected: snowy (7100 ft trailhead, 8600 ft lake, snowed in)
+
+  - id: stanley_lake_inlet
+    name: Stanley Lake Inlet Trail
+    area: ID - Sawtooth NRA
+    bbox: [44.245, -115.090, 44.265, -115.055]
+    name_regex: "Stanley|Lady Face"
+    expected: borderline (~6500 ft, lake melts mid-May, upper trail snowy)
+
+  - id: schweitzer_summit
+    name: Schweitzer Mountain trails
+    area: ID - Selkirks
+    bbox: [48.360, -116.640, 48.390, -116.600]
+    name_regex: ".+"
+    expected: snowy (4700-6400 ft, late-melt north-side)
+
+  # ============== MONTANA ==============
+  - id: avalanche_lake_glacier
+    name: Avalanche Lake (Glacier NP)
+    area: MT - Glacier NP
+    bbox: [48.670, -113.825, 48.685, -113.800]
+    name_regex: "Avalanche Lake"
+    expected: borderline (3900 ft trailhead, 3905 ft lake, melted early)
+
+  - id: hidden_lake_overlook
+    name: Hidden Lake Overlook (Glacier NP)
+    area: MT - Glacier NP (Logan Pass)
+    bbox: [48.690, -113.720, 48.710, -113.690]
+    name_regex: "Hidden Lake"
+    expected: snowy (6650 ft, Going-to-the-Sun Road just opening in early June)
+
+  - id: highline_glacier
+    name: Highline Trail (Glacier NP)
+    area: MT - Glacier NP (Logan Pass)
+    bbox: [48.690, -113.755, 48.755, -113.700]
+    name_regex: "Highline"
+    expected: snowy (6650-7300 ft, cornices into July, GTSR access only)
+
+  - id: iceberg_lake_glacier
+    name: Iceberg Lake (Glacier NP)
+    area: MT - Glacier NP (Many Glacier)
+    bbox: [48.795, -113.700, 48.820, -113.650]
+    name_regex: "Iceberg|Ptarmigan"
+    expected: snowy (4900-6100 ft, lake holds ice into July)
+
+  - id: grinnell_glacier
+    name: Grinnell Glacier (Glacier NP)
+    area: MT - Glacier NP (Many Glacier)
+    bbox: [48.780, -113.760, 48.800, -113.700]
+    name_regex: "Grinnell"
+    expected: snowy (4900-6500 ft, upper trail snowy into July)
+
+  - id: holland_falls
+    name: Holland Lake & Falls
+    area: MT - Flathead NF
+    bbox: [47.450, -113.610, 47.470, -113.580]
+    name_regex: "Holland"
+    expected: borderline (4100 ft, mostly melted, some shaded patches)
+
+  - id: mount_sentinel_m
+    name: Mount Sentinel (the M, Missoula)
+    area: MT - Missoula
+    bbox: [46.855, -113.978, 46.870, -113.960]
+    name_regex: "Sentinel|^M$|Hellgate"
+    expected: open (3200-5160 ft, south-facing, snow-free)
+
+  - id: beehive_basin_big_sky
+    name: Beehive Basin (Big Sky)
+    area: MT - Madison Range
+    bbox: [45.305, -111.430, 45.330, -111.395]
+    name_regex: "Beehive"
+    expected: snowy (8400-9500 ft, late melt)
+
+  - id: hyalite_peak_bozeman
+    name: Hyalite Peak Trail (Bozeman)
+    area: MT - Custer Gallatin NF
+    bbox: [45.380, -110.985, 45.420, -110.945]
+    name_regex: "Hyalite Peak|Hyalite"
+    expected: snowy (6700-10300 ft, snowed in upper sections)
+
+  - id: pine_creek_falls
+    name: Pine Creek Falls (Paradise Valley)
+    area: MT - Absaroka Range
+    bbox: [45.490, -110.530, 45.510, -110.505]
+    name_regex: "Pine Creek"
+    expected: borderline (5650 ft, falls accessible, upper trail snowy)

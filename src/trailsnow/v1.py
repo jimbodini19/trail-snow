@@ -16,6 +16,7 @@ from typing import Iterable
 
 import yaml
 
+from .map import render_map
 from .overpass import fetch_trails_in_bbox
 from .snotel import (
     Station,
@@ -26,6 +27,7 @@ from .snotel import (
 )
 
 SEEDS_PATH = Path("seeds/trails.yaml")
+MAP_ENTRIES: list[dict] = []
 
 
 def _trail_centroid(coords: list[list[float]]) -> tuple[float, float]:
@@ -56,7 +58,7 @@ def _fmt_reading(snow: dict, code: str) -> str:
     return f"{code}: {v} {r.get('unit', 'in')} (as of {d})"
 
 
-def run_seed(seed: dict, stations: list[Station]) -> None:
+def run_seed(seed: dict, stations: list[Station], map_collect: bool = False) -> None:
     name = seed["name"]
     bbox = tuple(seed["bbox"])
     name_rx = seed.get("name_regex")
@@ -73,6 +75,20 @@ def run_seed(seed: dict, stations: list[Station]) -> None:
         return
     if not trails:
         print("    no matching trails found in bbox; widen bbox or relax name_regex")
+        if map_collect:
+            s, w, n, e = bbox
+            MAP_ENTRIES.append({
+                "seed_id": seed.get("id", ""),
+                "seed_name": name,
+                "area": seed.get("area", ""),
+                "expected": expected,
+                "bbox": [s, w, n, e],
+                "centroid": [(s + n) / 2, (w + e) / 2],
+                "trail_count": 0,
+                "total_km": 0.0,
+                "station": None,
+                "snow": None,
+            })
         return
 
     # Aggregate: total length and a single centroid for the whole match group.
@@ -91,9 +107,22 @@ def run_seed(seed: dict, stations: list[Station]) -> None:
     hit = nearest_active(clat, clon, stations, k=5)
     if hit is None:
         print("    no nearby SNOTEL station returned recent data")
-        # Still show the closest 3 for debugging.
         for dist, st in nearest_stations(clat, clon, stations, k=3):
             print(f"      candidate (no data): {st.name} ({st.triplet})  {dist:.1f} km")
+        if map_collect:
+            s, w, n, e = bbox
+            MAP_ENTRIES.append({
+                "seed_id": seed.get("id", ""),
+                "seed_name": name,
+                "area": seed.get("area", ""),
+                "expected": expected,
+                "bbox": [s, w, n, e],
+                "centroid": [clat, clon],
+                "trail_count": len(trails),
+                "total_km": total_km,
+                "station": None,
+                "snow": None,
+            })
         return
     st, dist_km, snow = hit
     elev = f"{st.elevation_ft:.0f} ft" if st.elevation_ft is not None else "elev n/a"
@@ -104,6 +133,28 @@ def run_seed(seed: dict, stations: list[Station]) -> None:
     print(f"      {_fmt_reading(snow, 'SNWD')}")
     print(f"      {_fmt_reading(snow, 'WTEQ')}")
     print("    estimated snow conditions: (v1, point-station only, not trail-elevation corrected)")
+
+    if map_collect:
+        s, w, n, e = bbox
+        MAP_ENTRIES.append({
+            "seed_id": seed.get("id", ""),
+            "seed_name": name,
+            "area": seed.get("area", ""),
+            "expected": expected,
+            "bbox": [s, w, n, e],
+            "centroid": [clat, clon],
+            "trail_count": len(trails),
+            "total_km": total_km,
+            "station": {
+                "name": st.name,
+                "triplet": st.triplet,
+                "lat": st.lat,
+                "lon": st.lon,
+                "elevation_ft": st.elevation_ft,
+                "distance_km": dist_km,
+            },
+            "snow": snow,
+        })
 
 
 def load_seeds() -> list[dict]:
@@ -116,7 +167,9 @@ def main(argv: Iterable[str] | None = None) -> int:
     p.add_argument("--all", action="store_true", help="run all seeds")
     p.add_argument("--bbox", help="custom bbox: south,west,north,east")
     p.add_argument("--name", help="name regex for --bbox mode")
+    p.add_argument("--map", dest="map_path", help="write self-contained Leaflet HTML map to this path")
     args = p.parse_args(list(argv) if argv is not None else None)
+    map_collect = bool(args.map_path)
 
     print("loading SNOTEL station catalog ...", end=" ", flush=True)
     stations = load_stations()
@@ -132,23 +185,24 @@ def main(argv: Iterable[str] | None = None) -> int:
             "name_regex": args.name,
             "expected": "",
         }
-        run_seed(seed, stations)
-        return 0
+        run_seed(seed, stations, map_collect=map_collect)
+    else:
+        seeds = load_seeds()
+        if args.seed:
+            match = [s for s in seeds if s["id"] == args.seed]
+            if not match:
+                print(f"no seed with id {args.seed!r}; available: {[s['id'] for s in seeds]}", file=sys.stderr)
+                return 2
+            run_seed(match[0], stations, map_collect=map_collect)
+        else:
+            for s in seeds:
+                run_seed(s, stations, map_collect=map_collect)
 
-    seeds = load_seeds()
-    if args.seed:
-        match = [s for s in seeds if s["id"] == args.seed]
-        if not match:
-            print(f"no seed with id {args.seed!r}; available: {[s['id'] for s in seeds]}", file=sys.stderr)
-            return 2
-        run_seed(match[0], stations)
-        return 0
-
-    if args.all or (not args.seed and not args.bbox):
-        for s in seeds:
-            run_seed(s, stations)
-        return 0
-
+    if map_collect:
+        out = Path(args.map_path)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(render_map(MAP_ENTRIES))
+        print(f"\nmap written: {out}  (open in browser)")
     return 0
 
 
