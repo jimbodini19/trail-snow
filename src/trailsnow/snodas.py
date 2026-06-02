@@ -31,7 +31,7 @@ import numpy as np
 import requests
 
 MASKED_BASE = "https://noaadata.apps.nsidc.org/NOAA/G02158/masked"
-USER_AGENT = "trail-snow/0.2 (https://example.local)"
+USER_AGENT = "trail-snow/0.3 (contact: jimmy@guidedgrowthmktg.com)"
 
 # Masked grid constants.
 COLS = 6935
@@ -118,6 +118,10 @@ def load_depth(d: date | None = None, max_lookback_days: int = 7) -> tuple[np.nd
 
 def latlon_to_pixel(lat: float, lon: float) -> tuple[int, int]:
     """Return (row, col) pixel for a WGS84 point. Raises if outside grid."""
+    # We treat LL_LON/MAX_LAT as the OUTER edge of the corner pixels and floor
+    # into cells. NSIDC headers are sometimes cell-CENTER referenced; if so
+    # there's a ~half-pixel (~0.5 km N/S) offset. Immaterial at SNODAS's ~1 km
+    # resolution for a snowed-in-or-not estimate, but don't assume sub-pixel.
     if not (MIN_LON <= lon <= MAX_LON and MIN_LAT <= lat <= MAX_LAT):
         raise ValueError(f"point ({lat}, {lon}) outside SNODAS masked CONUS extent")
     col = int((lon - LL_LON) / CELL_SIZE)
