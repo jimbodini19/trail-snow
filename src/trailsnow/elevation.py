@@ -14,7 +14,7 @@ from pathlib import Path
 import requests
 
 EPQS_URL = "https://epqs.nationalmap.gov/v1/json"
-USER_AGENT = "trail-snow/0.2 (https://example.local)"
+USER_AGENT = "trail-snow/0.3 (contact: jimmy@guidedgrowthmktg.com)"
 CACHE_DIR = Path("data/cache/elevation")
 SLEEP_BETWEEN_S = 0.15  # be polite
 
@@ -40,7 +40,16 @@ def elevation_m(lat: float, lon: float, timeout: int = 30) -> float | None:
         v = r.json().get("value")
         elev = float(v) if v not in (None, "", "null") else None
     except (requests.RequestException, ValueError):
+        # Transient network/parse failure: do NOT cache. Caching here would
+        # bake a temporary outage into a permanent "no elevation" for this point.
+        time.sleep(SLEEP_BETWEEN_S)
+        return None
+    # EPQS returns a large negative sentinel (-1000000) for points outside its
+    # DEM coverage. Treat those as missing so they don't poison the elevation
+    # stats or hijack the min-elevation trailhead pick in analyze_seed.
+    if elev is not None and elev < -500:
         elev = None
+    # Only genuine successful lookups (incl. a real out-of-coverage None) cache.
     cp.write_text(json.dumps({"elev_m": elev}))
     time.sleep(SLEEP_BETWEEN_S)
     return elev

@@ -18,7 +18,7 @@ import requests
 OVERPASS_URL = "https://overpass-api.de/api/interpreter"
 # Overpass returns 406 if the UA looks bot-ish or anonymous. Include a real
 # contact email per their etiquette guide.
-USER_AGENT = "trail-snow/0.2 (contact: jimmy@guidedgrowthmktg.com)"
+USER_AGENT = "trail-snow/0.3 (contact: jimmy@guidedgrowthmktg.com)"
 HEADERS = {
     "User-Agent": USER_AGENT,
     "Accept": "application/json",
@@ -50,13 +50,20 @@ def _query_overpass(query: str, timeout: int = 60, max_attempts: int = 3) -> dic
                 timeout=timeout,
             )
             if r.status_code == 200:
+                # Parse BEFORE caching. A mirror can return HTTP 200 with a
+                # non-JSON error page; caching that text would poison the cache
+                # and crash every later run at json.loads(cache.read_text()).
+                data = r.json()
                 cache.write_text(r.text)
-                return r.json()
+                return data
             if r.status_code in (429, 504):
                 time.sleep(2 ** attempt * 5)
                 continue
             r.raise_for_status()
-        except requests.RequestException as e:
+        except (requests.RequestException, ValueError) as e:
+            # ValueError covers a bad JSON body from r.json() across requests
+            # versions (modern requests raises a RequestException subclass of
+            # ValueError; older ones raise a plain json.JSONDecodeError).
             last_err = e
             time.sleep(2 ** attempt * 2)
     raise RuntimeError(f"Overpass query failed after {max_attempts} attempts: {last_err}")
