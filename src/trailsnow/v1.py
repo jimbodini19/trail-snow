@@ -16,6 +16,7 @@ from typing import Iterable
 
 import yaml
 
+from .geom import line_length_m
 from .map import render_map
 from .overpass import fetch_trails_in_bbox
 from .snotel import (
@@ -37,16 +38,8 @@ def _trail_centroid(coords: list[list[float]]) -> tuple[float, float]:
 
 
 def _trail_length_km(coords: list[list[float]]) -> float:
-    from math import radians, sin, cos, asin, sqrt
-    R = 6371.0
-    total = 0.0
-    for (a_lat, a_lon), (b_lat, b_lon) in zip(coords, coords[1:]):
-        p1, p2 = radians(a_lat), radians(b_lat)
-        dphi = radians(b_lat - a_lat)
-        dlam = radians(b_lon - a_lon)
-        h = sin(dphi / 2) ** 2 + cos(p1) * cos(p2) * sin(dlam / 2) ** 2
-        total += 2 * R * asin(sqrt(h))
-    return total
+    # Single source of truth for haversine lives in geom; convert m -> km.
+    return line_length_m(coords) / 1000.0
 
 
 def _fmt_reading(snow: dict, code: str) -> str:
@@ -167,7 +160,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     p.add_argument("--all", action="store_true", help="run all seeds")
     p.add_argument("--bbox", help="custom bbox: south,west,north,east")
     p.add_argument("--name", help="name regex for --bbox mode")
-    p.add_argument("--map", dest="map_path", help="write self-contained Leaflet HTML map to this path")
+    p.add_argument("--map", dest="map_path", help="write self-contained HTML report to this path")
     args = p.parse_args(list(argv) if argv is not None else None)
     map_collect = bool(args.map_path)
 

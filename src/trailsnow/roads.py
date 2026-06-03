@@ -9,9 +9,10 @@ Data Warehouse:
     uses (per the EDW closed-roads dataset).
 
 Both layers are keyless, public, and standard ArcGIS REST. We do a small
-buffered point-in-polygon-style spatial query around the trailhead and
-return the nearest road in each layer plus enough metadata for the report
-to classify access.
+buffered spatial query around the trailhead and return the FIRST matching
+road within the buffer in each layer. ArcGIS returns features unordered and
+we don't request geometry, so this is "a road within range", not provably
+the closest one -- good enough for a coarse access flag, not for routing.
 
 Combine with the SNODAS trailhead-snow proxy:
   - CLOSED road found within X meters of trailhead -> definitely gated.
@@ -33,7 +34,7 @@ CLOSED_LAYER = "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_RoadBasic_01
 USER_AGENT = "trail-snow/0.3 (contact: jimmy@guidedgrowthmktg.com)"
 CACHE_DIR = Path("data/cache/roads")
 
-# Search radius around the trailhead for nearest road. 2 km picks up the
+# Search radius around the trailhead for a nearby road. 2 km picks up the
 # access spur and the road it connects to in almost all cases.
 DEFAULT_RADIUS_M = 2000
 
@@ -112,19 +113,26 @@ def query_road_status(lat: float, lon: float, radius_m: int = DEFAULT_RADIUS_M) 
         except (json.JSONDecodeError, KeyError):
             pass
 
+    open_feats: list[dict] = []
+    closed_feats: list[dict] = []
+    open_ok = closed_ok = True
     try:
         open_feats = _query(OPEN_LAYER, lat, lon, radius_m)
     except (requests.RequestException, RuntimeError):
-        open_feats = []
+        open_ok = False
     try:
         closed_feats = _query(CLOSED_LAYER, lat, lon, radius_m)
     except (requests.RequestException, RuntimeError):
-        closed_feats = []
+        closed_ok = False
 
-    cache.write_text(json.dumps({
-        "open_attrs": open_feats[0] if open_feats else None,
-        "closed_attrs": closed_feats[0] if closed_feats else None,
-    }))
+    # Only cache when BOTH queries genuinely succeeded. A failed query yields
+    # an empty list that is indistinguishable from "no road nearby"; caching it
+    # would bake a transient outage into a permanent "no road data" for this pt.
+    if open_ok and closed_ok:
+        cache.write_text(json.dumps({
+            "open_attrs": open_feats[0] if open_feats else None,
+            "closed_attrs": closed_feats[0] if closed_feats else None,
+        }))
 
     return {
         "open": _first(open_feats[0]) if open_feats else None,
@@ -140,7 +148,7 @@ def classify_access(
     """Combine SNODAS-at-trailhead with FS road status.
 
     Returns (badge_text, css_class, sub_text). Logic priority:
-      1. If FS reports a CLOSED road right at the trailhead -> GATED.
+      1. If FS reports a CLOSED road within the search radius -> GATED.
       2. If FS reports an OPEN passenger-car or paved road -> DRIVABLE
          (regardless of SNODAS, since maintained roads are plowed).
       3. Otherwise fall back to SNODAS: >= 8 cm of snow at trailhead -> blocked.

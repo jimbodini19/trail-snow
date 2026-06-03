@@ -19,6 +19,12 @@ fi
 # shellcheck disable=SC1091
 source .venv/bin/activate
 
+# Self-heal: the editable install gets lost across some pip/venv operations.
+if ! python -c "import trailsnow" 2>/dev/null; then
+  echo "trailsnow package not importable, reinstalling editable..."
+  pip install -e . >/dev/null
+fi
+
 mkdir -p docs
 python -m trailsnow.v2 --all --report docs/index.html
 

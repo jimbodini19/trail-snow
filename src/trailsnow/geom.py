@@ -33,6 +33,8 @@ def sample_along(coords: list[list[float]], spacing_m: float = 300.0) -> list[tu
     Spacing is approximate: each interior segment may differ slightly because we
     walk segment by segment. Good enough for SNODAS sampling at 1 km grid.
     """
+    if spacing_m <= 0:
+        raise ValueError(f"spacing_m must be positive, got {spacing_m}")
     if len(coords) < 2:
         return [tuple(coords[0])] if coords else []
 

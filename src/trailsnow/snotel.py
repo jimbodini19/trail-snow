@@ -15,7 +15,6 @@ is ~5-10 MB and very cacheable.
 from __future__ import annotations
 
 import json
-import math
 import time
 from dataclasses import dataclass
 from datetime import date, timedelta
@@ -24,8 +23,10 @@ from typing import Iterable
 
 import requests
 
+from .geom import haversine_m
+
 AWDB_BASE = "https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1"
-USER_AGENT = "trail-snow/0.1 (https://example.local)"
+USER_AGENT = "trail-snow/0.3 (contact: jimmy@guidedgrowthmktg.com)"
 CACHE_DIR = Path("data/cache")
 STATIONS_CACHE = CACHE_DIR / "snotel_stations.json"
 STATIONS_TTL_DAYS = 30
@@ -102,12 +103,8 @@ def load_stations(networks: Iterable[str] = SNOW_NETWORKS) -> list[Station]:
 
 
 def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    R = 6371.0
-    phi1, phi2 = math.radians(lat1), math.radians(lat2)
-    dphi = math.radians(lat2 - lat1)
-    dlam = math.radians(lon2 - lon1)
-    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlam / 2) ** 2
-    return 2 * R * math.asin(math.sqrt(a))
+    # Single source of truth for haversine lives in geom; convert m -> km.
+    return haversine_m(lat1, lon1, lat2, lon2) / 1000.0
 
 
 def nearest_stations(lat: float, lon: float, stations: list[Station], k: int = 5) -> list[tuple[float, Station]]:

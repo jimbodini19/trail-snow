@@ -1,8 +1,9 @@
 """v2 HTML report: per-trail snowed-in fraction with inline depth sparkline.
 
 Same self-contained-HTML approach as the v1 report. No CDN, no JS.
-Sparkline is an inline SVG of snow depth (cm) vs cumulative distance along
-the trail. Threshold line is drawn so you can eyeball how much of the trail
+Sparkline is an inline SVG of snow depth (cm) across the trail's sample
+points; samples are ~evenly spaced, so the x-axis is roughly proportional to
+distance. Threshold line is drawn so you can eyeball how much of the trail
 sits above the cutoff.
 """
 
@@ -37,7 +38,7 @@ def _classify_access(trailhead: dict | None) -> tuple[str, str, str]:
     """Combine FS road status with SNODAS-at-trailhead.
 
     Priority:
-      1. FS reports a CLOSED road near trailhead -> GATED.
+      1. FS reports a CLOSED road within the trailhead search radius -> GATED.
       2. FS reports an OPEN paved/passenger-car road -> DRIVABLE
          (overrides SNODAS, because maintained roads get plowed).
       3. Fall back to SNODAS snow at trailhead.
@@ -82,8 +83,8 @@ def _classify_access(trailhead: dict | None) -> tuple[str, str, str]:
     )
 
 
-def _sparkline_svg(depths_mm: list[float | None], cum_m: list[float] | None,
-                   threshold_cm: float, width: int = 280, height: int = 56) -> str:
+def _sparkline_svg(depths_mm: list[float | None], threshold_cm: float,
+                   width: int = 280, height: int = 56) -> str:
     pad = 4
     valid = [(i, d / 10.0) for i, d in enumerate(depths_mm) if d is not None]
     if not valid:
@@ -111,8 +112,6 @@ def _sparkline_svg(depths_mm: list[float | None], cum_m: list[float] | None,
     return (f'<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" '
             f'xmlns="http://www.w3.org/2000/svg">{th}{poly}{th_label}{max_label}</svg>')
 
-
-_STATE_RE = None  # lazy compile
 
 def _state_of(area: str) -> str:
     """Extract a state code from the area string. 'WA - Foo' -> 'WA', 'ID/WA - Foo' -> 'ID'."""
@@ -171,7 +170,7 @@ def render_v2_report(results: list[dict]) -> str:
                 f'<div class="metric"><div class="metric-label">elevation range</div>'
                 f'<div class="metric-value small">{r["elev_min_m"]:.0f} to {r["elev_max_m"]:.0f} m</div></div>'
             ) if r["elev_min_m"] is not None else ""
-            spark = _sparkline_svg(r["depths_mm"], None, r["threshold_cm"])
+            spark = _sparkline_svg(r["depths_mm"], r["threshold_cm"])
             sub_meta = (
                 f'{r["n_ways"]} ways &middot; {r["total_length_m"]/1000:.1f} km &middot; '
                 f'{r["n_samples_valid"]}/{r["n_samples_total"]} samples valid &middot; '

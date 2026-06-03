@@ -46,7 +46,8 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-v1 only needs `requests`. v2 adds `numpy`, `rasterio`, `shapely`, `geopandas`.
+v1 needs `requests` and `pyyaml`. v2 adds `numpy`. SNODAS masked is a plain
+WGS84 lat/lon grid, so no `rasterio` / `shapely` / `geopandas` are needed.
 
 ## Use (v1)
 
@@ -62,7 +63,7 @@ Run all seeds:
 python -m trailsnow.v1 --all
 ```
 
-Render a self-contained Leaflet map of the run (open in any browser, no install):
+Render a self-contained HTML report of the run (open in any browser, no install):
 
 ```
 python -m trailsnow.v1 --all --map out/v1.html

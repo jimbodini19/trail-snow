@@ -56,7 +56,12 @@ def analyze_seed(
 ) -> dict:
     bbox = tuple(seed["bbox"])
     name_rx = seed.get("name_regex")
-    trails = fetch_trails_in_bbox(bbox, name_regex=name_rx)
+    try:
+        trails = fetch_trails_in_bbox(bbox, name_regex=name_rx)
+    except Exception as e:
+        # One Overpass failure must not abort an entire --all run. Degrade this
+        # seed to a no-data result; the report and print_result handle not-ok.
+        return {"seed": seed, "ok": False, "reason": f"overpass error: {e}"}
     if not trails:
         return {"seed": seed, "ok": False, "reason": "no OSM ways matched"}
 

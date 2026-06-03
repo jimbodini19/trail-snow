@@ -124,8 +124,8 @@ trails:
   - id: tom_dick_harry
     name: Tom Dick and Harry Mountain
     area: OR - Mt Hood NF
-    bbox: [45.285, -121.815, 45.310, -121.775]
-    name_regex: "Tom.*Dick|Tom Dick"
+    bbox: [45.270, -121.835, 45.325, -121.770]
+    name_regex: "Tom.*Dick|TDH|Mirror Lake"
     expected: snowy (5060 ft summit, north-facing slopes hold snow)
 
   - id: trillium_lake_loop
@@ -145,8 +145,8 @@ trails:
   - id: south_sister_climb
     name: South Sister Climbers Trail
     area: OR - Three Sisters Wilderness
-    bbox: [43.985, -121.755, 44.110, -121.690]
-    name_regex: "South Sister|Devils Lake"
+    bbox: [43.955, -121.790, 44.115, -121.665]
+    name_regex: "South Sister|Devils Lake|Climbers"
     expected: snowy (10360 ft summit, snow on route until late July)
 
   - id: smith_rock
@@ -167,8 +167,8 @@ trails:
   - id: kamiak_butte
     name: Kamiak Butte Loop (Palouse)
     area: ID/WA - Palouse
-    bbox: [46.875, -117.155, 46.890, -117.130]
-    name_regex: "Pine Ridge|Kamiak"
+    bbox: [46.862, -117.170, 46.898, -117.118]
+    name_regex: "Pine Ridge|Kamiak|Backbone"
     expected: open (low elevation, Palouse)
 
   - id: moscow_mountain
@@ -188,29 +188,29 @@ trails:
   - id: mickinnick_sandpoint
     name: Mickinnick Trail (Sandpoint)
     area: ID - Sandpoint
-    bbox: [48.290, -116.605, 48.310, -116.580]
-    name_regex: "Mickinnick"
+    bbox: [48.275, -116.625, 48.320, -116.570]
+    name_regex: "Mickinnick|Schweitzer Cutoff"
     expected: borderline (2200 ft to 3300 ft, mostly melted)
 
   - id: tubbs_hill_cda
     name: Tubbs Hill (Coeur d'Alene)
     area: ID - Coeur d'Alene
-    bbox: [47.665, -116.785, 47.680, -116.770]
-    name_regex: "Tubbs"
+    bbox: [47.660, -116.790, 47.683, -116.765]
+    name_regex: "Tubbs|Centennial|Lake View"
     expected: open (lakefront, 2150 ft, snow-free)
 
   - id: mineral_ridge
     name: Mineral Ridge National Recreation Trail
     area: ID - Coeur d'Alene area
-    bbox: [47.598, -116.704, 47.612, -116.685]
-    name_regex: "Mineral Ridge"
+    bbox: [47.590, -116.715, 47.620, -116.678]
+    name_regex: "Mineral Ridge|Caribou|Lookout"
     expected: open (~2500-3500 ft, south-facing, melts early)
 
   - id: stevens_lakes_lookout_pass
     name: Stevens Lakes (Lookout Pass)
     area: ID - Bitterroots
-    bbox: [47.448, -115.715, 47.470, -115.685]
-    name_regex: "Stevens Lakes?"
+    bbox: [47.438, -115.730, 47.480, -115.675]
+    name_regex: "Stevens Lakes?|Willow Creek"
     expected: snowy (5200 ft trailhead, 6100+ ft lakes, late melt)
 
   - id: alice_lake_sawtooths
@@ -266,8 +266,8 @@ trails:
   - id: grinnell_glacier
     name: Grinnell Glacier (Glacier NP)
     area: MT - Glacier NP (Many Glacier)
-    bbox: [48.780, -113.760, 48.800, -113.700]
-    name_regex: "Grinnell"
+    bbox: [48.770, -113.770, 48.810, -113.685]
+    name_regex: "Grinnell|Swiftcurrent"
     expected: snowy (4900-6500 ft, upper trail snowy into July)
 
   - id: holland_falls
@@ -287,8 +287,8 @@ trails:
   - id: beehive_basin_big_sky
     name: Beehive Basin (Big Sky)
     area: MT - Madison Range
-    bbox: [45.305, -111.430, 45.330, -111.395]
-    name_regex: "Beehive"
+    bbox: [45.295, -111.450, 45.340, -111.380]
+    name_regex: "Beehive|Bear Basin|North Fork"
     expected: snowy (8400-9500 ft, late melt)
 
   - id: hyalite_peak_bozeman
