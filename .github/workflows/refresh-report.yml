@@ -1,0 +1,51 @@
+name: refresh-report
+
+on:
+  schedule:
+    - cron: "30 9 * * *"   # daily 9:30 UTC = 2:30am PDT
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Restore data cache (SNODAS grids, elevation, overpass)
+        uses: actions/cache@v4
+        with:
+          path: data/cache
+          key: trailsnow-cache-${{ github.run_id }}
+          restore-keys: |
+            trailsnow-cache-
+
+      - name: Install
+        run: |
+          pip install -r requirements.txt
+          pip install -e .
+
+      - name: Build v2 report
+        run: |
+          mkdir -p docs
+          python -m trailsnow.v2 --all --report docs/index.html
+          touch docs/.nojekyll
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "trail-snow bot"
+          git config user.email "jimmy@guidedgrowthmktg.com"
+          git add docs/index.html docs/.nojekyll
+          if git diff --cached --quiet; then
+            echo "No changes to publish"
+          else
+            git commit -m "report: auto-refresh $(date -u +%Y-%m-%d)"
+            git push
+          fi
