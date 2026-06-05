@@ -2,9 +2,9 @@ name: refresh-report
 
 on:
   schedule:
-    - cron: "30 9 * * *"   # daily 9:30 UTC = 2:30am PDT
+    - cron: "30 9 * * 0"   # weekly Sunday 9:30 UTC = 2:30am PDT
   workflow_dispatch:
-
+  
 permissions:
   contents: write
 
